@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>주식회사 우주상회 — 공고 게시판</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── 모달 ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 22, 40, 0.72);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 720px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+      position: relative;
+      animation: slideUp 0.22s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal-close {
+      position: sticky;
+      top: 0;
+      float: right;
+      margin: 14px 14px 0 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: background 0.15s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.28); }
+
+    /* 모달 안 공고 카드 헤더 */
+    .modal-box .card-header {
+      background: linear-gradient(150deg, #0a1628 0%, #0f1f3d 50%, #192e52 100%);
+      padding: 28px 36px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .modal-box .card-header::before {
+      content: '';
+      position: absolute;
+      right: -30px; bottom: -30px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .modal-box .card-seq {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: #4d6d9a; margin-bottom: 8px; position: relative;
+    }
+    .modal-box .card-title {
+      font-size: 22px; font-weight: 700;
+      color: #f1f5f9; line-height: 1.3;
+      margin-bottom: 12px; position: relative;
+    }
+    .modal-box .card-meta {
+      display: flex; align-items: center;
+      gap: 8px; font-size: 13px; color: #4d6d9a;
+      flex-wrap: wrap; position: relative;
+    }
+    .modal-box .card-meta-sep {
+      width: 3px; height: 3px; border-radius: 50%; background: #2d4a6e;
+    }
+
+    /* 모달 안 공고 본문 */
+    .modal-body {
+      padding: 30px 36px 36px;
+    }
+    .modal-intro {
+      font-size: 14px; line-height: 1.9;
+      color: var(--text-sub);
+      padding-bottom: 24px; margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-info-grid {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+    .modal-info-row {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-info-row:last-child { border-bottom: none; }
+    .modal-info-key {
+      padding: 13px 16px;
+      font-size: 13px; font-weight: 600;
+      color: var(--text-sub); background: #f8fafc;
+      border-right: 1px solid var(--border);
+      display: flex; align-items: center;
+    }
+    .modal-info-val {
+      padding: 13px 16px;
+      font-size: 13px; color: var(--text);
+      line-height: 1.65; display: flex; align-items: center;
+    }
+    .modal-info-val.em { font-weight: 700; color: var(--red); }
+
+    .modal-warn {
+      display: flex; gap: 12px;
+      background: var(--red-bg);
+      border: 1px solid #fecaca;
+      border-radius: var(--radius-sm);
+      padding: 14px 18px; margin-bottom: 28px;
+    }
+    .modal-warn-icon {
+      width: 32px; height: 32px;
+      background: #fee2e2; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .modal-warn-text {
+      font-size: 13px; color: #991b1b;
+      line-height: 1.7; align-self: center;
+    }
+    .modal-sign {
+      border-top: 1px solid var(--border);
+      padding-top: 22px; text-align: right;
+      font-size: 14px; line-height: 2.1; color: var(--text-sub);
+    }
+    .modal-sign strong { font-size: 15px; color: var(--text); }
+
+    .modal-footer-btn {
+      display: flex; justify-content: center;
+      padding: 0 36px 28px; gap: 10px;
+    }
+
+    /* ── 히어로 배너 ── */
+    .hero-banner {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef9ee 100%);
+      border: 1px solid var(--amber-border);
+      border-left: 4px solid var(--amber);
+      border-radius: var(--radius);
+      padding: 26px 28px;
+      margin-bottom: 40px;
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .hero-icon {
+      width: 44px; height: 44px;
+      background: var(--amber-bg); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0; margin-top: 2px;
+    }
+    .hero-title { font-size: 15px; font-weight: 700; color: var(--amber); margin-bottom: 7px; }
+    .hero-desc { font-size: 14px; color: #92400e; line-height: 1.75; }
+    .hero-period {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 12px; background: var(--amber); color: #fff;
+      font-size: 12px; font-weight: 700; padding: 5px 14px;
+      border-radius: 20px; letter-spacing: 0.3px;
+    }
+
+    /* ── 목록 ── */
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 12px;
+    }
+    .notice-list { display: flex; flex-direction: column; gap: 10px; }
+    .notice-card {
+      display: grid;
+      grid-template-columns: 52px 1fr auto auto;
+      align-items: center; gap: 18px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px 26px;
+      text-decoration: none; color: inherit;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+    }
+    .notice-card:hover {
+      box-shadow: var(--shadow-hover); transform: translateY(-2px); border-color: #c7d2e0;
+    }
+    .notice-card.disabled { opacity: 0.55; pointer-events: none; }
+    .card-num {
+      font-size: 26px; font-weight: 800; color: #dde3ed;
+      letter-spacing: -1.5px; line-height: 1; font-variant-numeric: tabular-nums;
+    }
+    .card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .card-date { font-size: 13px; color: var(--text-muted); }
+    .card-arrow { color: #cbd5e1; font-size: 20px; transition: transform 0.18s, color 0.18s; }
+    .notice-card:hover .card-arrow { transform: translateX(4px); color: var(--accent); }
+
+    @media (max-width: 560px) {
+      .hero-banner { grid-template-columns: 1fr; }
+      .hero-icon { display: none; }
+      .notice-card { grid-template-columns: 40px 1fr auto; gap: 12px; padding: 18px; }
+      .card-arrow { display: none; }
+      .modal-info-row { grid-template-columns: 1fr; }
+      .modal-info-key { border-right: none; border-bottom: 1px solid var(--border); }
+      .modal-body { padding: 22px 20px 28px; }
+      .modal-box .card-header { padding: 22px 20px 18px; }
+      .modal-footer-btn { padding: 0 20px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── 2차 공고 팝업 모달 ── -->
+<div id="notice-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-box">
+
+    <div class="card-header">
+      <button class="modal-close" onclick="closeModal()" aria-label="닫기">✕</button>
+      <p class="card-seq">공고 — 2차</p>
+      <h2 class="card-title" id="modal-title">해산 및 채권신고 공고</h2>
+      <div class="card-meta">
+        <span>공고일: 2026년 10월 29일</span>
+        <span class="card-meta-sep"></span>
+        <span>근거: 상법 제535조</span>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-intro">
+        주식회사 우주상회는 2026년 10월 27일 주주총회 결의에 따라 해산하였으므로, 상법 제535조에 의거하여 다음과 같이 공고합니다.<br /><br />
+        당 회사에 대하여 채권을 보유하신 채권자께서는 아래 신고기간 내에 채권을 증명할 수 있는 서류를 첨부하여 신고하여 주시기 바랍니다.
+      </p>
+
+      <div class="modal-info-grid">
+        <div class="modal-info-row">
+          <div class="modal-info-key">1. 상호</div>
+          <div class="modal-info-val">주식회사 우주상회</div>
+        </div>
+        <div class="modal-info-row">
+          <div class="modal-info-key">2. 해산일</div>
+          <div class="modal-info-val em">2026년 10월 27일</div>
+        </div>
+        <div class="modal-info-row">
+          <div class="modal-info-key">3. 채권신고기간</div>
+          <div class="modal-info-val em">2026년 10월 27일 ~ 2026년 12월 31일</div>
+        </div>
+        <div class="modal-info-row">
+          <div class="modal-info-key">4. 채권신고처</div>
+          <div class="modal-info-val">
+            본점소재지: 경기도 광주시 문형산안길 22, 2층 3호 (신현동)<br />
+            연락처: 010-5941-8520
+          </div>
+        </div>
+        <div class="modal-info-row">
+          <div class="modal-info-key">5. 신고방법</div>
+          <div class="modal-info-val">채권을 증명할 수 있는 서류를 첨부하여 서면 제출</div>
+        </div>
+      </div>
+
+      <div class="modal-warn">
+        <div class="modal-warn-icon">⚠</div>
+        <p class="modal-warn-text">
+          신고기간 내에 채권을 신고하지 아니한 경우에는 법령에 따라 청산에서 제외될 수 있음을 알려드립니다.
+        </p>
+      </div>
+
+      <div class="modal-sign">
+        2026년 10월 29일<br />
+        <strong>주식회사 우주상회</strong><br />
+        청산인 오미선
+      </div>
+    </div>
+
+    <div class="modal-footer-btn">
+      <button class="btn btn-dark" onclick="closeModal()">확인 후 닫기</button>
+      <a href="notice-2.html" class="btn btn-ghost">전체 공고 보기 →</a>
+    </div>
+
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div>
+      <div class="header-logo-name">주식회사 우주상회</div>
+      <div class="header-logo-sub">SPACEMART CO., LTD.</div>
+    </div>
+    <span class="header-pill">공고 게시판</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero-banner">
+    <div class="hero-icon">⚠</div>
+    <div>
+      <p class="hero-title">해산 공고 안내</p>
+      <p class="hero-desc">
+        주식회사 우주상회는 2026년 10월 27일 주주총회 결의에 따라 해산하였습니다.<br />
+        채권을 보유하신 분께서는 신고기간 내에 반드시 채권을 신고하여 주시기 바랍니다.
+      </p>
+      <span class="hero-period">채권신고기간 &nbsp;2026. 10. 27 — 2026. 12. 31</span>
+    </div>
+  </div>
+
+  <p class="section-eyebrow">공고 목록</p>
+
+  <div class="notice-list">
+    <a class="notice-card" href="notice-2.html">
+      <span class="card-num">02</span>
+      <div>
+        <p class="card-title">해산 및 채권신고 공고 (2차)</p>
+        <span class="card-date">2026년 10월 29일</span>
+      </div>
+      <span class="badge badge-active">공고 중</span>
+      <span class="card-arrow">→</span>
+    </a>
+    <a class="notice-card" href="notice-1.html">
+      <span class="card-num">01</span>
+      <div>
+        <p class="card-title">해산 및 채권신고 공고 (1차)</p>
+        <span class="card-date">2026년 10월 27일</span>
+      </div>
+      <span class="badge badge-active">공고 중</span>
+      <span class="card-arrow">→</span>
+    </a>
+  </div>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-company">주식회사 우주상회</div>
+      <div class="footer-company-en">SPACEMART CO., LTD.</div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-info">
+      <div class="footer-info-row">경기도 광주시 문형산안길 22, 2층 3호 (신현동)</div>
+      <div class="footer-info-row">
+        <span class="fi-label">청산인</span>
+        <span class="footer-info-sep"></span>
+        <span>오미선</span>
+        <span class="footer-info-sep"></span>
+        <span>010-5941-8520</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function closeModal() {
+    const modal = document.getElementById('notice-modal');
+    modal.style.animation = 'fadeIn 0.15s ease reverse';
+    setTimeout(() => { modal.style.display = 'none'; }, 140);
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+</script>
+
+</body>
+</html>

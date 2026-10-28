@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>해산 및 채권신고 공고 (1차) — 주식회사 우주상회</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* 공고 카드 */
+    .notice-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    /* 카드 헤더 */
+    .card-header {
+      background: linear-gradient(150deg, #0a1628 0%, #0f1f3d 50%, #192e52 100%);
+      padding: 38px 44px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-header::before {
+      content: '';
+      position: absolute;
+      right: -40px;
+      bottom: -40px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .card-header::after {
+      content: '';
+      position: absolute;
+      right: 60px;
+      top: -20px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(37,99,235,0.08);
+    }
+    .card-seq {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #4d6d9a;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .card-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #f1f5f9;
+      line-height: 1.3;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #4d6d9a;
+      flex-wrap: wrap;
+      position: relative;
+    }
+    .card-meta-sep {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: #2d4a6e;
+    }
+
+    /* 카드 본문 */
+    .card-body {
+      padding: 42px 44px;
+    }
+
+    .intro {
+      font-size: 15px;
+      line-height: 1.9;
+      color: var(--text-sub);
+      padding-bottom: 34px;
+      margin-bottom: 34px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* 정보 그리드 */
+    .info-grid {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .info-row {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key {
+      padding: 15px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      background: #f8fafc;
+      border-right: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+    }
+    .info-val {
+      padding: 15px 20px;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.7;
+      display: flex;
+      align-items: center;
+    }
+    .info-val.em {
+      font-weight: 700;
+      color: var(--red);
+    }
+
+    /* 경고 박스 */
+    .warn-box {
+      display: flex;
+      gap: 14px;
+      background: var(--red-bg);
+      border: 1px solid #fecaca;
+      border-radius: var(--radius-sm);
+      padding: 18px 22px;
+      margin-bottom: 38px;
+    }
+    .warn-icon {
+      width: 38px;
+      height: 38px;
+      background: #fee2e2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .warn-text {
+      font-size: 14px;
+      color: #991b1b;
+      line-height: 1.75;
+      align-self: center;
+    }
+
+    /* 서명 */
+    .sign-area {
+      border-top: 1px solid var(--border);
+      padding-top: 30px;
+      text-align: right;
+      font-size: 15px;
+      line-height: 2.1;
+      color: var(--text-sub);
+    }
+    .sign-company {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    @media (max-width: 600px) {
+      .card-header { padding: 28px 22px; }
+      .card-title { font-size: 21px; }
+      .card-body { padding: 28px 22px; }
+      .info-row { grid-template-columns: 1fr; }
+      .info-key { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+    @media print {
+      .site-header, .breadcrumb, .action-bar, .site-footer { display: none !important; }
+      body { background: #fff; }
+      .container { padding: 0; }
+      .notice-card { box-shadow: none; border: 1px solid #ccc; }
+      .card-header { background: #1e3a5f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div>
+      <div class="header-logo-name">주식회사 우주상회</div>
+      <div class="header-logo-sub">SPACEMART CO., LTD.</div>
+    </div>
+    <span class="header-pill">공고 게시판</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <nav class="breadcrumb">
+    <a href="index.html">공고 목록</a>
+    <span class="breadcrumb-sep">›</span>
+    해산 및 채권신고 공고 (1차)
+  </nav>
+
+  <div class="action-bar">
+    <a href="index.html" class="btn btn-dark">← 목록으로</a>
+    <button class="btn btn-ghost" onclick="window.print()">🖨&ensp;인쇄 / PDF 저장</button>
+  </div>
+
+  <div class="notice-card">
+
+    <div class="card-header">
+      <p class="card-seq">공고 — 1차</p>
+      <h1 class="card-title">해산 및 채권신고 공고</h1>
+      <div class="card-meta">
+        <span>공고일: 2026년 10월 27일</span>
+        <span class="card-meta-sep"></span>
+        <span>근거: 상법 제535조</span>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      <p class="intro">
+        주식회사 우주상회는 2026년 10월 27일 주주총회 결의에 따라 해산하였으므로, 상법 제535조에 의거하여 다음과 같이 공고합니다.<br /><br />
+        당 회사에 대하여 채권을 보유하신 채권자께서는 아래 신고기간 내에 채권을 증명할 수 있는 서류를 첨부하여 신고하여 주시기 바랍니다.
+      </p>
+
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-key">1. 상호</div>
+          <div class="info-val">주식회사 우주상회</div>
+        </div>
+        <div class="info-row">
+          <div class="info-key">2. 해산일</div>
+          <div class="info-val em">2026년 10월 27일</div>
+        </div>
+        <div class="info-row">
+          <div class="info-key">3. 채권신고기간</div>
+          <div class="info-val em">2026년 10월 27일 ~ 2026년 12월 31일</div>
+        </div>
+        <div class="info-row">
+          <div class="info-key">4. 채권신고처</div>
+          <div class="info-val">
+            본점소재지: 경기도 광주시 문형산안길 22, 2층 3호 (신현동)<br />
+            연락처: 010-5941-8520
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-key">5. 신고방법</div>
+          <div class="info-val">채권을 증명할 수 있는 서류를 첨부하여 서면 제출</div>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <div class="warn-icon">⚠</div>
+        <p class="warn-text">
+          신고기간 내에 채권을 신고하지 아니한 경우에는 법령에 따라 청산에서 제외될 수 있음을 알려드립니다.
+        </p>
+      </div>
+
+      <div class="sign-area">
+        2026년 10월 27일<br />
+        <span class="sign-company">주식회사 우주상회</span><br />
+        청산인 오미선
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-company">주식회사 우주상회</div>
+      <div class="footer-company-en">SPACEMART CO., LTD.</div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-info">
+      <div class="footer-info-row">경기도 광주시 문형산안길 22, 2층 3호 (신현동)</div>
+      <div class="footer-info-row">
+        <span class="fi-label">청산인</span>
+        <span class="footer-info-sep"></span>
+        <span>오미선</span>
+        <span class="footer-info-sep"></span>
+        <span>010-5941-8520</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
